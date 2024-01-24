@@ -6,7 +6,7 @@
 /*   By: maurodri <maurodri@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/24 00:38:09 by maurodri          #+#    #+#             */
-/*   Updated: 2024/01/24 03:45:03 by maurodri         ###   ########.fr       */
+/*   Updated: 2024/01/24 04:34:30 by maurodri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -143,8 +143,10 @@ t_arraylist	ft_arraylist_add(t_arraylist alst, void *element)
 
 /*
 	Adds element to alst at index at.
-	Consider that adding to front of list is expensive
-	since elements have to be shifted to open space for element.
+	If at is bigger than size the element is just
+	added after last element.
+	Consider that adding to front of alst is expensive
+	since elements have to be shifted to open space for new element.
 	If reallocation is needed and fails alst is destroyed and
 	NULL is returned.
   	To protect against errors you should always reassign
@@ -158,7 +160,7 @@ t_arraylist	ft_arraylist_addat(t_arraylist alst, void *element, size_t at)
 	void	*last;
 	size_t	i;
 	
-	if (at == alst->size)
+	if (at >= alst->size)
 		return (ft_arraylist_add(alst, element));
 	last = ft_arraylist_get(alst, alst->size - 1);
 	i = alst->size - 1;
@@ -168,7 +170,7 @@ t_arraylist	ft_arraylist_addat(t_arraylist alst, void *element, size_t at)
 		i--;
 	}
 	alst->arr[at] = element;
-	return (ft_arraylist_add(alst, element));
+	return (ft_arraylist_add(alst, last));
 }
 
 /*
@@ -216,7 +218,7 @@ void	ft_arraylist_foreach(t_arraylist alst, void (*fun) (void *))
 
 /*
   	Call fun with each element of alst frees the old element
-	and replaces the  with the return value of fun.
+	and replaces with the return value of fun.
 	The fun should not be null.
 	If fun return type is the same as
 	the type already on alst you may pass NULL for
