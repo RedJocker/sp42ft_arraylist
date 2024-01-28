@@ -6,21 +6,13 @@
 /*   By: maurodri <maurodri@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/24 00:38:09 by maurodri          #+#    #+#             */
-/*   Updated: 2024/01/24 04:34:30 by maurodri         ###   ########.fr       */
+/*   Updated: 2024/01/28 06:13:46 by maurodri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #define DEFAULT_ARRAYLIST_SIZE 20
-#include <stdlib.h>
-
-typedef struct s_arraylist *t_arraylist;
-
-struct s_arraylist {
-	void	**arr;
-	size_t	size;
-	size_t	capacity;
-	void 	(*destroy_element)(void *element);
-};
+#include "ft_arraylist.h"
+#include "ft_arraylist_internal.h"
 
 void	*ft_free_retnull(void *to_free)
 {
@@ -28,11 +20,15 @@ void	*ft_free_retnull(void *to_free)
 	return (NULL);
 }
 
-void	*ft_realloc(void *block, size_t new_size)
+void	*ft_realloc(void *block, size_t old_size, size_t new_size)
 {
+	unsigned char	*old_block;
 	unsigned char	*new_block;
 	size_t			i;
+	size_t			copy_size;
+	unsigned char	temp;
 
+	old_block = (unsigned char *) block;
 	if (new_size == 0)
 		new_size = 1;
 	new_block = malloc(new_size);
@@ -40,10 +36,15 @@ void	*ft_realloc(void *block, size_t new_size)
 		return (NULL);
 	if (!block)
 		return (new_block);
+	if (new_size > old_size)
+		copy_size = old_size;
+	else
+		copy_size = new_size;
 	i = 0;
-	while (i < new_size)
+	while (i < copy_size)
 	{
-		new_block[i] = ((unsigned char*) block)[i];
+		temp = old_block[i];
+		new_block[i] = temp;
 		i++;
 	}
 	free(block);
@@ -72,6 +73,7 @@ t_arraylist ft_arraylist_new(void (*destroy_element)(void *element))
 	new_arraylist->capacity = DEFAULT_ARRAYLIST_SIZE;
 	new_arraylist->size = 0;
 	new_arraylist->destroy_element = destroy_element;
+	return (new_arraylist);
 }
 
 /*
@@ -93,8 +95,14 @@ void	*ft_arraylist_destroy(t_arraylist alst)
 		alst->destroy_element(alst->arr[i]);
 		i++;
 	}
+	free(alst->arr);
 	free(alst);
 	return (NULL);
+}
+
+size_t	ft_arraylist_len(t_arraylist alst)
+{
+	return (alst->size);
 }
 
 /*
@@ -131,10 +139,13 @@ t_arraylist	ft_arraylist_add(t_arraylist alst, void *element)
 
 	if(alst->capacity == alst->size)
 	{
-		temp = (void **) ft_realloc(
-			alst, 2 * alst->capacity * sizeof(void *));
+		temp = (void *) ft_realloc(
+			alst->arr,
+			alst->capacity * sizeof(void *),
+			2 * alst->capacity * sizeof(void *));
 		if (!temp)
-			return (ft_arraylist_destroy(alst));		
+			return (ft_arraylist_destroy(alst));
+		alst->arr = temp;
 	}
 	alst->arr[alst->size] = element;
 	alst->size++;
@@ -171,6 +182,14 @@ t_arraylist	ft_arraylist_addat(t_arraylist alst, void *element, size_t at)
 	}
 	alst->arr[at] = element;
 	return (ft_arraylist_add(alst, last));
+}
+
+void	ft_arraylist_replace(t_arraylist alst, void *element, size_t at)
+{
+	if (at >= alst->size)
+		return ;
+	alst->destroy_element(alst->arr[at]);
+	alst->arr[at] = element;
 }
 
 /*
