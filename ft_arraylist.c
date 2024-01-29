@@ -6,7 +6,7 @@
 /*   By: maurodri <maurodri@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2024/01/24 00:38:09 by maurodri          #+#    #+#             */
-/*   Updated: 2024/01/28 06:13:46 by maurodri         ###   ########.fr       */
+/*   Updated: 2024/01/29 02:23:06 by maurodri         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -255,15 +255,17 @@ int	ft_arraylist_transform(
 {
 	size_t	i;
 	int		num_nulls_returned;
+	void	*temp;
 
 	num_nulls_returned = 0;
 	i = 0;
 	while (i < alst->size)
 	{
-		alst->destroy_element(alst->arr[i]);
-		alst->arr[i] = fun(alst->arr[i]);
-		if(alst->arr[i] == NULL)
+		temp = fun(alst->arr[i]);
+		if(temp == NULL)
 			num_nulls_returned++;
+		alst->destroy_element(alst->arr[i]);
+		alst->arr[i] = temp;
 		i++;
 	}
 	if (update_destroy_element != NULL)
